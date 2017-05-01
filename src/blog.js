@@ -72,6 +72,7 @@ class Blog {
   //   options: (required)
   //   - title      : 'title'. entry title.default `''`.
   //   - content    : 'content'. entry content. default `''`.
+  //   - type       : content type
   //   - updated    : 'updated'. default `undefined`
   //   - categories : 'category' '@term'. default `undefined`.
   //   - draft      : 'app:control' > 'app:draft'. default `undefined`.
@@ -80,7 +81,7 @@ class Blog {
   //   - res: response
   // returns:
   //   Promise
-  create({ title, content, updated, categories, draft }, callback) {
+  create({ title, content, type , updated, categories, draft }, callback) {
     title = title != null ? title : '';
     content = content != null ? content : '';
     let method = 'post';
@@ -95,7 +96,7 @@ class Blog {
       },
       content: {
         $: {
-          type: 'text/plain'
+          type: type || 'text/plain'
         },
         _: content
       }
@@ -123,7 +124,7 @@ class Blog {
   //   - res: response
   // returns:
   //   Promise
-  update({ id, title, content, updated, categories, draft, type }, callback) {
+  update({ id, title, content,type, updated, categories, draft }, callback) {
     if (id == null) { return this._reject('options.id is required', callback); }
     if (content == null) { return this._reject('options.content is required', callback); }
     let method = 'put';
