@@ -52,7 +52,7 @@ gulp.task('build', function() {
   rollup(rollupParams).then((bundle)=>{
     bundle.write({
       format: 'cjs',
-      dest: `${paths.buildDir}blog.js`
+      dest: `${paths.buildDir}index.js`
     });
   });
 });
@@ -61,7 +61,7 @@ gulp.task('compile-src', function() {
   rollup(rollupParams).then((bundle)=>{
     bundle.write({
       format: 'cjs',
-      dest: `${paths.compiledSrcDir}blog.js`
+      dest: `${paths.compiledSrcDir}index.js`
     });
   });
 });
