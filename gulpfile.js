@@ -74,11 +74,10 @@ gulp.task('copy-test-fixtures', () =>
 
 gulp.task('compile-test', ['copy-test-fixtures'], function() {
 //  let espower = require('gulp-espower');
-  return gulp
-    .src(paths.test)
-    .pipe(gulpRollup(rollupParams))
+  return 
+    gulpRollup(rollupParams)
     .pipe('index.js')
-    //.pipe(espower())
+    .pipe(espower())
     .pipe(gulp.dest(paths.compiledTestDir));
 });
 
