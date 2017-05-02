@@ -1,10 +1,12 @@
 # hatena-blog-api
 
-Hatena::Blog AtomPub API wrapper for Node.js (unofficial)
+このライブラリは非公式なNode.js用のHatena::Blog AtomPub APIのラッパーです。
+bouzuyaさんのnode-hatena-blog-apiをベースにcoffeeからes6に変換し、いくつか修正を加えています。
+https://github.com/bouzuya/node-hatena-blog-api
 
 ## Installation
 
-    $ npm install hatena-blog-api
+$ npm install https://github.com/sfpgmr/node-hatena-blog-api
 
 ## Usage
 
@@ -81,32 +83,10 @@ var client = blog({
 
 ## API Docs
 
-See [Hatena::Blog AtomPub API](http://developer.hatena.ne.jp/ja/documents/blog/apis/atom), [`test/`](test/) and [`examples/`](examples/).
-
-## Development
-
-`npm run`
+ [Hatena::Blog AtomPub API](http://developer.hatena.ne.jp/ja/documents/blog/apis/atom), [`test/`](test/) and [`examples/`](examples/).
 
 ## License
 
 [MIT](LICENSE)
 
-## Author
 
-[bouzuya][user] &lt;[m@bouzuya.net][mail]&gt; ([http://bouzuya.net][url])
-
-## Badges
-
-[![Build Status][travis-badge]][travis]
-[![Dependencies status][david-dm-badge]][david-dm]
-[![Coverage Status][coveralls-badge]][coveralls]
-
-[travis]: https://travis-ci.org/bouzuya/node-hatena-blog-api
-[travis-badge]: https://travis-ci.org/bouzuya/node-hatena-blog-api.svg?branch=master
-[david-dm]: https://david-dm.org/bouzuya/node-hatena-blog-api
-[david-dm-badge]: https://david-dm.org/bouzuya/node-hatena-blog-api.png
-[coveralls]: https://coveralls.io/r/bouzuya/node-hatena-blog-api
-[coveralls-badge]: https://img.shields.io/coveralls/bouzuya/node-hatena-blog-api.svg
-[user]: https://github.com/bouzuya
-[mail]: mailto:m@bouzuya.net
-[url]: http://bouzuya.net

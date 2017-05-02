@@ -72,7 +72,7 @@ class Blog {
   //   options: (required)
   //   - title      : 'title'. entry title.default `''`.
   //   - content    : 'content'. entry content. default `''`.
-  //   - type       : content type
+  //   - type       : 'type'. entry content type
   //   - updated    : 'updated'. default `undefined`
   //   - categories : 'category' '@term'. default `undefined`.
   //   - draft      : 'app:control' > 'app:draft'. default `undefined`.
@@ -116,6 +116,7 @@ class Blog {
   //   - id         : entry id. (required)
   //   - title      : 'title'. entry title. default `undefined`.
   //   - content    : 'content'. entry content. (required).
+  //   - type       : 'type'. entry content type
   //   - updated    : 'updated'. default `undefined`
   //   - categories : 'category' '@term'. default `undefined`.
   //   - draft      : 'app:control' > 'app:draft'. default `undefined`.
