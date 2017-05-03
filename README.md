@@ -12,40 +12,16 @@ $ npm install https://github.com/sfpgmr/node-hatena-blog-api
 
 See [`examples/`](examples/).
 
-### Coding style (Callback/Promise)
-
-#### Callback style
-
-```javascript
-var blog = require('hatena-blog-api');
-
-var client = blog({
-  type: 'wsse',
-  username: 'username',
-  blogId: 'blog id',
-  apiKey: 'api key'
-});
-var options = { title: 'bouzuya\'s entry', content: 'fun is justice!' };
-
-client.create(options, function(err) {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log('uploaded');
-  }
-});
-```
-
-#### Promise style
+### Coding style (Promise Only)
 
 ```javascript
 var blog = /* ... */;
 var client = /* ... */;
 var options = /* ... */;
 
-client.create(options).then(function() {
+client.create(options).then(()=>{
   console.log('uploaded');
-}, function(err) {
+}, (err) => {
   console.error(err);
 });
 ```

@@ -4,6 +4,23 @@ import request from 'request';
 import wsse from 'wsse';
 import xml2js from 'xml2js';
 
+function pad(n) {
+  return ('0' + n).slice(-2);
+}
+
+function toISOString(d = new Date()) {
+  let timezoneOffset = d.getTimezoneOffset();
+  let hour = Math.abs(timezoneOffset / 60) | 0;
+  let minutes = Math.abs(timezoneOffset % 60);
+  let tzstr = 'Z';
+  if (timezoneOffset < 0) {
+    tzstr = `+${pad(hour)}:${pad(minutes)}`;
+  } else if (timezoneOffset > 0) {
+    tzstr = `-${pad(hour)}:${pad(minutes)}`;
+  }
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}${tzstr}`;
+}
+
 // Hatena::Blog AtomPub API wrapper
 //
 // - GET    CollectionURI       (/<username>/<blog_id>/atom/entry)
@@ -22,7 +39,7 @@ import xml2js from 'xml2js';
 //   => None
 class Blog {
   static initClass() {
-  
+
     this.prototype._rawRequest = request;
   }
 
@@ -70,43 +87,40 @@ class Blog {
   // POST CollectionURI (/<username>/<blog_id>/atom/entry)
   // params:
   //   options: (required)
-  //   - title      : 'title'. entry title.default `''`.
+  //   - title      : 'title'. entry title.default `''`. (required)
   //   - content    : 'content'. entry content. default `''`.
-  //   - type       : 'type'. entry content type
+  //   - type       : 'type'. entry content type . "text/html","text/markdown","text/plain"
   //   - updated    : 'updated'. default `undefined`
   //   - categories : 'category' '@term'. default `undefined`.
   //   - draft      : 'app:control' > 'app:draft'. default `undefined`.
-  //   callback:
-  //   - err: error
-  //   - res: response
   // returns:
   //   Promise
-  create({ title, content, type , updated, categories, draft }, callback) {
-    title = title != null ? title : '';
-    content = content != null ? content : '';
+  create({ title = '', content = '', type = 'text/plain', updated = new Date(), categories, draft = true }) {
     let method = 'post';
     let path = `/${this._username}/${this._blogId}/atom/entry`;
-    let body = { entry: {
-      $: {
-        xmlns: 'http://www.w3.org/2005/Atom',
-        'xmlns:app': 'http://www.w3.org/2007/app'
-      },
-      title: {
-        _: title
-      },
-      content: {
+    let body = {
+      entry: {
         $: {
-          type: type || 'text/plain'
+          xmlns: 'http://www.w3.org/2005/Atom',
+          'xmlns:app': 'http://www.w3.org/2007/app'
         },
-        _: content
+        title: {
+          _: title
+        },
+        content: {
+          $: {
+            type: type || 'text/plain'
+          },
+          _: content
+        }
       }
-    }
-  };
-    if (updated != null) { body.entry.updated = {_: updated}; }
-    if (categories != null) { body.entry.category = categories.map(c => ({$: { term: c }})); }
-    if (draft != null ? draft : false) { body.entry['app:control'] = { 'app:draft': { _: 'yes' } }; }
+    };
+    if (updated instanceof Date) updated = toISOString(updated);
+    if (updated) { body.entry.updated = { _: updated }; }
+    if (categories) { body.entry.category = categories.map(c => ({ $: { term: c } })); }
+    if (draft ? draft : false) { body.entry['app:control'] = { 'app:draft': { _: 'yes' } }; }
     let statusCode = 201;
-    return this._request({ method, path, body, statusCode }, callback);
+    return this._request({ method, path, body, statusCode });
   }
 
 
@@ -120,104 +134,96 @@ class Blog {
   //   - updated    : 'updated'. default `undefined`
   //   - categories : 'category' '@term'. default `undefined`.
   //   - draft      : 'app:control' > 'app:draft'. default `undefined`.
-  //   callback:
-  //   - err: error
-  //   - res: response
   // returns:
   //   Promise
-  update({ id, title, content,type, updated, categories, draft }, callback) {
-    if (id == null) { return this._reject('options.id is required', callback); }
-    if (content == null) { return this._reject('options.content is required', callback); }
+  update({ id, title, content, type, updated, categories, draft }) {
+    if (!id) return this._reject('options.id is required');
+    if (!content) return this._reject('options.content is required');
+    if (!title) return this._reject('options.title is required');
+    if (!type) return this._reject('options.type is required');
+    if (!updated) return this._reject('options.updated is required');
+
+    if (updated instanceof Date) updated = toISOString(updated);
+
     let method = 'put';
     let path = `/${this._username}/${this._blogId}/atom/entry/${id}`;
-    let body = { entry: {
-      $: {
-        xmlns: 'http://www.w3.org/2005/Atom',
-        'xmlns:app': 'http://www.w3.org/2007/app'
-      },
-      content: {
+    let body = {
+      entry: {
         $: {
-          type: type || 'text/plain'
+          xmlns: 'http://www.w3.org/2005/Atom',
+          'xmlns:app': 'http://www.w3.org/2007/app'
         },
-        _: content
+        content: {
+          $: {
+            type: type || 'text/plain'
+          },
+          _: content
+        }
       }
-    }
-  };
-    if (title) body.entry.title = {_: title};
-    if (updated){ body.entry.updated = {_: updated}; }
-    if (categories != null) { body.entry.category = categories.map(c => ({$: { term: c }})); }
+    };
+    if (title) body.entry.title = { _: title };
+    if (updated) { body.entry.updated = { _: updated }; }
+    if (categories != null) { body.entry.category = categories.map(c => ({ $: { term: c } })); }
     if (draft != null ? draft : false) { body.entry['app:control'] = { 'app:draft': { _: 'yes' } }; }
     let statusCode = 200;
-    return this._request({ method, path, body, statusCode }, callback);
+    return this._request({ method, path, body, statusCode });
   }
 
   // DELETE MemberURI (/<username>/<blog_id>/atom/entry/<entry_id>)
   // params:
   //   options: (required)
   //   - id: entry id. (required)
-  //   callback:
-  //   - err: error
-  //   - res: response
   // returns:
   //   Promise
-  destroy({ id }, callback) {
-    if (id == null) { return this._reject('options.id is required', callback); }
+  destroy({ id }) {
+    if (id == null) { return this._reject('options.id is required'); }
     let method = 'delete';
     let path = `/${this._username}/${this._blogId}/atom/entry/${id}`;
     let statusCode = 200;
-    return this._request({ method, path, statusCode }, callback);
+    return this._request({ method, path, statusCode });
   }
 
   // GET MemberURI (/<username>/<blog_id>/atom/entry/<entry_id>)
   // params:
   //   options: (required)
   //   - id: entry id. (required)
-  //   callback:
-  //   - err: error
-  //   - res: response
   // returns:
   //   Promise
-  show({ id }, callback) {
-    if (id == null) { return this._reject('options.id is required', callback); }
+  show({ id }) {
+    if (id == null) { return this._reject('options.id is required'); }
     let method = 'get';
     let path = `/${this._username}/${this._blogId}/atom/entry/${id}`;
     let statusCode = 200;
-    return this._request({ method, path, statusCode }, callback);
+    return this._request({ method, path, statusCode });
   }
 
   // GET CollectionURI (/<username>/<blog_id>/atom/entry)
   // params:
   //   options:
   //   - page: page
-  //   callback:
-  //   - err: error
-  //   - res: response
   // returns:
   //   Promise
-  index(options, callback) {
-    !callback && (callback = ()=>{}); 
+  index(options) {
     let method = 'get';
     let pathWithoutQuery = `/${this._username}/${this._blogId}/atom/entry`;
-    let page = options != null ? options.page : undefined;
-    let query = ((page != null) ? `?page=${page}` : '');
+    let page = options.page != null ? options.page : undefined;
+    let query = page ? `?page=${page}` : '';
     let path = pathWithoutQuery + query;
     let statusCode = 200;
-    return this._request({ method, path, statusCode }, callback);
+    return this._request({ method, path, statusCode });
   }
 
-  _reject(message, callback) {
+  _reject(message) {
     let e;
     try {
       e = new Error(message);
-      if (callback != null) { callback(e); }
       return Promise.reject(e);
     } catch (error) {
       return Promise.reject(e);
     }
   }
 
-  _request({ method, path, body, statusCode }, callback) {
-    callback = callback != null ? callback : (function() {});
+  _request({ method, path, body, statusCode }) {
     let params = {};
     params.method = method;
     params.url = this._baseUrl + path;
@@ -229,7 +235,7 @@ class Blog {
         token_secret: this._accessTokenSecret
       };
     } else { // @_type is 'wsse'
-      let token = wsse().getUsernameToken(this._username, this._apiKey, {nonceBase64: true});
+      let token = wsse().getUsernameToken(this._username, this._apiKey, { nonceBase64: true });
       params.headers = {
         'Authorization': 'WSSE profile="UsernameToken"',
         'X-WSSE': `UsernameToken ${token}`
@@ -240,23 +246,17 @@ class Blog {
       .then(body => {
         if (body != null) { params.body = body; }
         return this._requestPromise(params);
-    }).then(res => {
+      }).then(res => {
         if (res.statusCode !== statusCode) {
           throw new Error(`HTTP status code is ${res.statusCode}`);
         }
         return this._toJson(res.body);
-      }).then(function(json) {
-        callback && callback(null, json);
-        return json;})
-      .then(null, function(err) {
-        callback && callback(err);
-        throw err;
-    });
+      });
   }
 
   _requestPromise(params) {
-    return new Promise((function(resolve, reject) {
-      return this._rawRequest(params, function(err, res) {
+    return new Promise((function (resolve, reject) {
+      return this._rawRequest(params, function (err, res) {
         if (err != null) {
           return reject(err);
         } else {
@@ -267,9 +267,9 @@ class Blog {
   }
 
   _toJson(xml) {
-    return new Promise(function(resolve, reject) {
-      let parser = new xml2js.Parser({explicitArray: false, explicitCharkey: true});
-      return parser.parseString(xml, function(err, result) {
+    return new Promise(function (resolve, reject) {
+      let parser = new xml2js.Parser({ explicitArray: false, explicitCharkey: true });
+      return parser.parseString(xml, function (err, result) {
         if (err != null) {
           return reject(err);
         } else {
