@@ -18,7 +18,7 @@ client.postEntry({
   type:'text/plain',
   updated: new Date(2010,1,3,10,10),
   draft: true
-}).then(function(res) {
+}).then(res=>{
   console.log(res);
   // assertion
   console.log(
@@ -32,7 +32,7 @@ client.postEntry({
   // GET CollectionURI (/<username>/<blog_id>/atom/entry)
   return client.getEntries();
 })
-.then(function(res) {
+.then(res=>{
   console.log(res);
 
   // PUT MemberURI (/<username>/<blog_id>/atom/entry/<entry_id>)
@@ -44,13 +44,13 @@ client.postEntry({
     draft: true
   });
 })
-.then(function() {
+.then(()=>{
   console.log('updated');
 
   // GET MemberURI (/<username>/<blog_id>/atom/entry/<entry_id>)
   return client.getEntry({ id: entryId });
 })
-.then(function(res) {
+.then(res=>{
   console.log(res);
 
   // assertion
@@ -61,7 +61,7 @@ client.postEntry({
   // DELETE MemberURI (/<username>/<blog_id>/atom/entry/<entry_id>)
   return client.deleteEntry({ id: entryId });
 })
-.then(function() {
+.then(()=> {
   console.log('deleted');
 });
 

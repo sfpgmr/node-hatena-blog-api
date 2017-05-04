@@ -3,8 +3,13 @@
 ## ※このライブラリおよびREADMEは現在作成中です。
 
 このライブラリは非公式なNode.js用の[Hatena::Blog AtomPub API](http://developer.hatena.ne.jp/ja/documents/blog/apis/atom)のラッパーです。
-[bouzuya](https://github.com/bouzuya)さんの[node-hatena-blog-api](https://github.com/bouzuya/node-hatena-blog-api)をベースにcoffeeからes6に変換し、いくつか修正を加えています。
+[bouzuya](https://github.com/bouzuya)さんの[node-hatena-blog-api](https://github.com/bouzuya/node-hatena-blog-api)をベースにcoffeeからes6に変換し、いくつか修正を加えています。  
 https://github.com/bouzuya/node-hatena-blog-api
+
+## 開発のポリシー
+
+* 不正なポストを行わないようにするため、引数のチェックはできる限り入念に行う。
+* ES6(ES2015)の構文をできる限り採用する。
 
 ## インストール方法
 
@@ -155,11 +160,17 @@ postEntry({ title = '', content = '',  updated = new Date(), categories, draft =
 
 ##### 引数
 
+引数はオブジェクト'`{}`'１つのみです。  
+オブジェクトのプロパティとして以下のパラメータを格納します。
+
 * ***title*** ... 記事タイトルを指定します。既定値は`''`(空白)です。`null`は空白に置き換えられます。
 * ***content*** ... 記事本文を指定します。既定値は`''`(空白)です。`null`は空白に置き換えられます。
-* ***updated*** ... 記事の公開日付を指定します。値は`Date`もしくはISO8601形式でミリ秒を省略したものを文字列で指定します。それ以外の値を指定した場合は例外が発生します。
-* ***categories*** ... カテゴリ文字列を配列で指定します。指定しない場合は省略されます。
-* ***draft*** ... 下書きかどうかを指定します。既定値は`false`(公開)です。`null`値の場合は`false`に設定します。
+* ***updated*** ... 記事の公開日付を指定します。値は`Date`もしくはISO8601形式でミリ秒を省略したものを文字列で指定します。それ以外の値を指定した場合は`reject`されます。
+* ***categories*** ... カテゴリ文字列を文字列、もしくは文字列の配列で指定します。指定しない場合は省略されます。  
+文字列もしくは文字列の配列以外を指定した場合、配列中に文字列以外が含まれる場合は`reject`されます。
+
+* ***draft*** ... 下書きかどうかを指定します。既定値は`false`(公開)です。  
+ブール値以外の値を指定すると`reject`されます。
 
 ##### 戻り値
 
@@ -191,7 +202,7 @@ client.postEntry({
     console.log('posted\n',JSON.stringify(res,null,1));
   },
   // reject
-  console.error.bind(console)
+  console.error
 );
 
 ```
@@ -267,13 +278,79 @@ client.postEntry({
 ```
 #### Blog.updateEntry()
 
+ブログ記事を更新します。
+
 ##### 書式
+```javascript
+  updateEntry({id,title,content,updated,categories,draft})
+```
+##### 引数
 
+引数はオブジェクト'`{}`'１つのみです。  
+オブジェクトのプロパティとして以下のパラメータを格納します。
 
+* ***title*** ... 記事タイトルを指定します。既定値は`''`(空白)です。`null`は空白に置き換えられます。`title`を指定しない場合は`reject`されます。
+* ***content*** ... 記事本文を指定します。既定値は`''`(空白)です。`null`は空白に置き換えられます。`content`を指定しない場合は`reject`されます。
+* ***updated*** ... 記事の公開日付を指定します。値は`Date`もしくはISO8601形式でミリ秒を省略したものを文字列で指定します。それ以外の値を指定した場合は`reject`されます。
+* ***categories*** ... カテゴリ文字列を文字列、もしくは文字列の配列で指定します。指定しない場合は省略されます。  
+文字列もしくは文字列の配列以外を指定した場合、配列中に文字列以外が含まれる場合は`reject`されます。
+* ***draft*** ... 下書きかどうかを指定します。既定値は`false`(公開)です。  
+ブール値以外の値を指定すると`reject`されます。
+
+##### 戻り値
+
+Promiseを返します。処理結果は`then()`ではセットする`function`オブジェクトの第一引数にセットされます。
+
+##### 使用例
+
+```javascript
+const Blog = require('hatena-blog-api2').Blog;
+
+const client = new Blog({
+  type: 'wsse',
+  userName: process.env.HATENA_USERNAME, // 'username'
+  blogId: process.env.HATENA_BLOG_ID,    // 'blog id'
+  apiKey: process.env.HATENA_APIKEY      // 'apikey'
+});
+
+//process.on('unhandledRejection', console.dir);
+
+// POST CollectionURI (/<username>/<blog_id>/atom/entry)
+client.postEntry({
+  title: 'テストエントリ',
+  updated:new Date(2010,1,1,10,10),
+  content: '# テストエントリ\r\nこれはテストです。\r\n\r\n',
+  categories:['blog','hatena']
+})
+.then(
+  // resolve
+  res=>{
+    console.log('#postEntryの結果\n',JSON.stringify(res,null,1));
+    // idの取り出し
+    const entryId = res.entry.id._.match(/^tag:[^:]+:[^-]+-[^-]+-\d+-(\d+)$/)[1];
+    console.log(entryId);
+    return client.updateEntry({
+      id:entryId,
+      title:res.entry.title._,
+      content:'修正',
+      updated:res.entry.updated._
+    });
+  }
+)
+.then(
+  // resolve
+  res=>{
+    console.log('#updateEntryの結果\n',JSON.stringify(res,null,1));
+  }
+)
+.catch(console.error);
+```
 
 ## License
 
 [MIT](LICENSE)
+
+## 利用しているライブラリ
 
 ## 製作者
 

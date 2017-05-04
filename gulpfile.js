@@ -16,7 +16,8 @@ const paths = {
   compiledSrcDir: './.tmp/src/',
   compiledTest: './.tmp/test/**/*.js',
   compiledTestDir: './.tmp/test/',
-  buildDir: './lib/'
+  buildDir: './lib/',
+  exampleDir: './examples/node_modules/hatena-blog-api2/lib/'
 };
 
 const rollupParams = 
@@ -32,6 +33,7 @@ const rollupParams =
     ]
 }
 
+const rollup
 gulp.task('clean', function(done) {
   let del = require('del');
   return del([
@@ -49,7 +51,7 @@ gulp.task('coveralls', function() {
 });
 
 gulp.task('build', function() {
-  rollup(rollupParams).then((bundle)=>{
+  rollup(rollupParams).then(bundle=>{
     bundle.write({
       format: 'cjs',
       dest: `${paths.buildDir}index.js`
@@ -57,8 +59,17 @@ gulp.task('build', function() {
   });
 });
 
+gulp.task('example',()=>{
+  rollup(rollupParams).then(bundle=>{
+    bundle.write({
+      format: 'cjs',
+      dest: `${paths.exampleDir}index.js`
+    });
+  });
+});
+
 gulp.task('compile-src', function() {
-  rollup(rollupParams).then((bundle)=>{
+  rollup(rollupParams).then(bundle=>{
     bundle.write({
       format: 'cjs',
       dest: `${paths.compiledSrcDir}index.js`
@@ -95,6 +106,6 @@ gulp.task('test', ['compile-src', 'compile-test'], function() {
   );
 });
 
-gulp.task('watch', () => gulp.watch([paths.src, paths.test], ['test']));
+gulp.task('watch', gulp.watch.bind(gulp,[paths.src], ['build','example']));
 
-gulp.task('default', ['build']);
+gulp.task('default', ['build','example']);
