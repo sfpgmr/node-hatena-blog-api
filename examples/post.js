@@ -1,4 +1,4 @@
-const Blog = require('../lib/').Blog; // require('hatena-blog-api')
+const Blog = require('hatena-blog-api2').Blog;
 
 const client = new Blog({
   type: 'wsse',

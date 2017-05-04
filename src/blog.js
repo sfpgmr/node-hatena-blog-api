@@ -157,12 +157,14 @@ class Blog {
         }
       }
     };
-    //
+    // 日付文字列のチェック
     if (updated instanceof Date)
     {
+      // DateはISO8601文字列に変換
       updated = toISOString(updated);
-    } else {
-      !updated.match(ISO8601Format) && this._reject();
+    } else if(!updated.match(ISO8601Format))
+    {
+      this._reject('postEntry:updateの日付フォーマットに誤りがあります。指定できるのはDateオブジェクトかISO8601文字列のみです。');
     }
     if (updated) { body.entry.updated = { _: updated }; }
     if (categories) { body.entry.category = categories.map(c => ({ $: { term: c } })); }

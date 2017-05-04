@@ -1,0 +1,14 @@
+{
+  "name": "examples",
+  "version": "0.1.0",
+  "description": "node-hatena-blog-api2 examples",
+  "main": "all.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "S.F.",
+  "license": "MIT",
+  "dependencies": {
+    "hatena-blog-api2": "file:///I:\\pj\\hatena-blog-api2"
+  }
+}

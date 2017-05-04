@@ -165,11 +165,106 @@ postEntry({ title = '', content = '',  updated = new Date(), categories, draft =
 
 Promiseを返します。`then()`ではセットする`function`オブジェクトの第一引数に処理結果がjsonで返ります。
 
+##### 使用例
+
+[ソースコード](./examples/post.js)
+
 ```javascript
+const Blog = require('hatena-blog-api2').Blog;
+
+const client = new Blog({
+  type: 'wsse',
+  userName: process.env.HATENA_USERNAME, // 'username'
+  blogId: process.env.HATENA_BLOG_ID,    // 'blog id'
+  apiKey: process.env.HATENA_APIKEY      // 'apikey'
+});
+
+// POST CollectionURI (/<username>/<blog_id>/atom/entry)
+client.postEntry({
+  title: 'テストエントリ',
+  updated:new Date(2010,1,1,10,10),
+  content: '# テストエントリ\r\nこれはテストです。\r\n\r\n',
+})
+.then(
+  // resolve
+  (res)=>{
+    console.log('posted\n',JSON.stringify(res,null,1));
+  },
+  // reject
+  console.error.bind(console)
+);
+
 ```
-
-
-
+上記の実行結果resolveにセットされるjsonデータ例
+```json
+{
+ "entry": {
+  "$": {
+   "xmlns": "http://www.w3.org/2005/Atom",
+   "xmlns:app": "http://www.w3.org/2007/app"
+  },
+  "id": {
+   "_": "tag:blog.hatena.ne.jp,2013:blog-sfpgmr-12921228815731439891-10328749687243023284"
+  },
+  "link": [
+   {
+    "$": {
+     "rel": "edit",
+     "href": "https://blog.hatena.ne.jp/sfpgmr/sfpgmr-test.hatenablog.com/atom/entry/10328749687243023284"
+    }
+   },
+   {
+    "$": {
+     "rel": "alternate",
+     "type": "text/html",
+     "href": "http://sfpgmr-test.hatenablog.com/entry/2010/02/01/%E3%83%86%E3%82%B9%E3%83%88%E3%82%A8%E3%83%B3%E3%83%88%E3%83%AA_1"
+    }
+   }
+  ],
+  "author": {
+   "name": {
+    "_": "sfpgmr"
+   }
+  },
+  "title": {
+   "_": "テストエントリ"
+  },
+  "updated": {
+   "_": "2010-02-01T01:10:00+09:00"
+  },
+  "published": {
+   "_": "2017-05-04T15:55:52+09:00"
+  },
+  "app:edited": {
+   "_": "2017-05-04T15:55:52+09:00"
+  },
+  "summary": {
+   "_": "# テストエントリ これはテストです。",
+   "$": {
+    "type": "text"
+   }
+  },
+  "content": {
+   "_": "# テストエントリ\r\nこれはテストです。\r\n\r\n",
+   "$": {
+    "type": "text/x-hatena-syntax"
+   }
+  },
+  "hatena:formatted-content": {
+   "_": "<p># テストエントリ<br />\nこれはテストです。</p>\n",
+   "$": {
+    "type": "text/html",
+    "xmlns:hatena": "http://www.hatena.ne.jp/info/xmlns#"
+   }
+  },
+  "app:control": {
+   "app:draft": {
+    "_": "no"
+   }
+  }
+ }
+}
+```
 #### Blog.updateEntry()
 
 ##### 書式
