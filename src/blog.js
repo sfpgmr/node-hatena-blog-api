@@ -32,9 +32,9 @@ function isBoolean(v){
 // DateをISO8601形式文字列に変換する
 // String.toISOString()はタイムゾーンがZとなってしまうので。。
 function toISOString(d = new Date()) {
-  let timezoneOffset = d.getTimezoneOffset();
-  let hour = Math.abs(timezoneOffset / 60) | 0;
-  let minutes = Math.abs(timezoneOffset % 60);
+  const timezoneOffset = d.getTimezoneOffset();
+  const hour = Math.abs(timezoneOffset / 60) | 0;
+  const minutes = Math.abs(timezoneOffset % 60);
   let tzstr = 'Z';
   if (timezoneOffset < 0) {
     tzstr = `+${pad(hour)}:${pad(minutes)}`;
@@ -220,7 +220,7 @@ class Blog {
     content,// 記事本体(必須)
     updated,// 更新日付(必須)
     categories,// カテゴリ(オプション)
-    draft = false //下書きがどうか
+    draft = false //下書きがどうか(既定:false(公開))
   }) {
     if (!id) return this._rejectRequired('updateEntry','id');
     if (!content) return this._rejectRequired('updateEntry','content');
@@ -300,8 +300,8 @@ class Blog {
   //   - id: entry id. (required)
   // returns:
   //   Promise
-  deleteEntry({ id }) {
-    if (id == null) { return this._reject('options.id is required'); }
+  deleteEntry(id) {
+    if (id == null) { return this._rejectRequired('deleteEntry','id'); }
     let method = 'delete';
     let path = `/${this._userName}/${this._blogId}/atom/entry/${id}`;
     let statusCode = 200;
@@ -309,14 +309,10 @@ class Blog {
   }
 
   // GET MemberURI (/<username>/<blog_id>/atom/entry/<entry_id>)
-  // params:
-  //   options: (required)
-  //   - id: entry id. (required)
   // returns:
   //   Promise
-
-  getEntry({ id }) {
-    if (id == null) { return this._reject('options.id is required'); }
+  getEntry(id) {
+    if (id == null) { return this._rejectRequired('getEntry','id'); }
     let method = 'get';
     let path = `/${this._userName}/${this._blogId}/atom/entry/${id}`;
     let statusCode = 200;
@@ -324,15 +320,11 @@ class Blog {
   }
 
   // GET CollectionURI (/<username>/<blog_id>/atom/entry)
-  // params:
-  //   options:
-  //   - page: page
   // returns:
   //   Promise
-  getEntries(options) {
+  getEntries(page) {
     let method = 'get';
     let pathWithoutQuery = `/${this._userName}/${this._blogId}/atom/entry`;
-    let page = options.page != null ? options.page : undefined;
     let query = page ? `?page=${page}` : '';
     let path = pathWithoutQuery + query;
     let statusCode = 200;

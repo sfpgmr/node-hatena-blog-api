@@ -289,9 +289,10 @@ client.postEntry({
 引数はオブジェクト'`{}`'１つのみです。  
 オブジェクトのプロパティとして以下のパラメータを格納します。
 
-* ***title*** ... 記事タイトルを指定します。既定値は`''`(空白)です。`null`は空白に置き換えられます。`title`を指定しない場合は`reject`されます。
-* ***content*** ... 記事本文を指定します。既定値は`''`(空白)です。`null`は空白に置き換えられます。`content`を指定しない場合は`reject`されます。
-* ***updated*** ... 記事の公開日付を指定します。値は`Date`もしくはISO8601形式でミリ秒を省略したものを文字列で指定します。それ以外の値を指定した場合は`reject`されます。
+* ***id*** （必須）... 記事IDを指定します。`id`を指定しない場合は`reject`されます。
+* ***title*** （必須）... 記事タイトルを指定します。既定値は`''`(空白)です。`null`は空白に置き換えられます。`title`を指定しない場合は`reject`されます。
+* ***content*** （必須）... 記事本文を指定します。既定値は`''`(空白)です。`null`は空白に置き換えられます。`content`を指定しない場合は`reject`されます。
+* ***updated*** （必須）... 記事の公開日付を指定します。値は`Date`もしくはISO8601形式でミリ秒を省略したものを文字列で指定します。`updated`自体を指定しない、もしくは`updated`に`Date`もしくはISO8601形式の文字列出ない場合`reject`されます。
 * ***categories*** ... カテゴリ文字列を文字列、もしくは文字列の配列で指定します。指定しない場合は省略されます。  
 文字列もしくは文字列の配列以外を指定した場合、配列中に文字列以外が含まれる場合は`reject`されます。
 * ***draft*** ... 下書きかどうかを指定します。既定値は`false`(公開)です。  
@@ -345,6 +346,235 @@ client.postEntry({
 )
 .catch(console.error);
 ```
+
+#### Blog.deleteEntry()
+
+記事を削除します。
+
+##### 書式
+
+```javascript
+  deleteEntry(id);
+```
+
+##### 引数
+
+* ***id*** （必須）... 記事IDを指定します。`id`を指定しない場合は`reject`されます。
+
+##### 戻り値
+
+Promiseを返します。処理結果は`then()`の引数に指定する`function`オブジェクトの第一引数として渡されます。値は正常終了した場合は`null`です。
+
+##### 使用例
+
+```javascript
+const Blog = require('hatena-blog-api2').Blog;
+
+const client = new Blog({
+  type: 'wsse',
+  userName: process.env.HATENA_USERNAME, // 'username'
+  blogId: process.env.HATENA_BLOG_ID,    // 'blog id'
+  apiKey: process.env.HATENA_APIKEY      // 'apikey'
+});
+
+//process.on('unhandledRejection', console.dir);
+
+// POST CollectionURI (/<username>/<blog_id>/atom/entry)
+client.postEntry({
+  title: 'テストエントリ',
+  updated:new Date(2010,1,1,10,10),
+  content: '# テストエントリ\r\nこれはテストです。\r\n\r\n',
+  categories:['blog','hatena']
+})
+.then(
+  // resolve
+  res=>{
+    console.log('#postEntryの結果\n',JSON.stringify(res,null,1));
+    // idの取り出し
+    const entryId = res.entry.id._.match(/^tag:[^:]+:[^-]+-[^-]+-\d+-(\d+)$/)[1];
+    console.log(entryId);
+    // 記事の削除
+    return client.deleteEntry(entryId);
+  }
+)
+.then(
+  // resolve
+  res=>{
+    console.log('#deleteEntryの結果\n',JSON.stringify(res,null,1));
+  }
+)
+.catch(console.error);
+
+```
+
+#### Blog.getEntry()
+
+記事を取得します。
+
+##### 書式
+
+```javascript
+ getEntry(id);
+```
+##### 引数
+
+* ***id*** （必須）... 記事IDを指定します。`id`を指定しない場合は`reject`されます。
+
+##### 戻り値
+
+Promiseを返します。処理結果は`then()`の引数に指定する`function`オブジェクトの第一引数として渡されます。値は正常終了した場合は`null`です。
+
+##### 使用例
+
+```javascript
+const Blog = require('hatena-blog-api2').Blog;
+
+const client = new Blog({
+  type: 'wsse',
+  userName: process.env.HATENA_USERNAME, // 'username'
+  blogId: process.env.HATENA_BLOG_ID,    // 'blog id'
+  apiKey: process.env.HATENA_APIKEY      // 'apikey'
+});
+
+//process.on('unhandledRejection', console.dir);
+
+// POST CollectionURI (/<username>/<blog_id>/atom/entry)
+client.postEntry({
+  title: 'テストエントリ',
+  updated:new Date(2010,1,1,10,10),
+  content: '# テストエントリ\r\nこれはテストです。\r\n\r\n',
+  categories:['blog','hatena']
+})
+.then(
+  // resolve
+  res=>{
+    console.log('#postEntryの結果\n',JSON.stringify(res,null,1));
+    // idの取り出し
+    const entryId = res.entry.id._.match(/^tag:[^:]+:[^-]+-[^-]+-\d+-(\d+)$/)[1];
+    console.log(entryId);
+    // エントリを取得
+    return client.getEntry(entryId);
+  }
+)
+.then(
+  // resolve
+  res=>{
+    console.log('#getEntryの結果\n',JSON.stringify(res,null,1));
+  }
+)
+.catch(console.error);
+```
+`getEntry`で返却されるJSONデータの例
+
+```json
+ {
+ "entry": {
+  "$": {
+   "xmlns": "http://www.w3.org/2005/Atom",
+   "xmlns:app": "http://www.w3.org/2007/app"
+  },
+  "id": {
+   "_": "tag:blog.hatena.ne.jp,2013:blog-sfpgmr-12921228815731439891-10328749687243094177"
+  },
+  "link": [
+   {
+    "$": {
+     "rel": "edit",
+     "href": "https://blog.hatena.ne.jp/sfpgmr/sfpgmr-test.hatenablog.com/atom/entry/10328749687243094177"
+    }
+   },
+   {
+    "$": {
+     "rel": "alternate",
+     "type": "text/html",
+     "href": "http://sfpgmr-test.hatenablog.com/entry/2010/02/01/%E3%83%86%E3%82%B9%E3%83%88%E3%82%A8%E3%83%B3%E3%83%88%E3%83%AA_10"
+    }
+   }
+  ],
+  "author": {
+   "name": {
+    "_": "sfpgmr"
+   }
+  },
+  "title": {
+   "_": "テストエントリ"
+  },
+  "updated": {
+   "_": "2010-02-01T01:10:00+09:00"
+  },
+  "published": {
+   "_": "2017-05-04T21:11:55+09:00"
+  },
+  "app:edited": {
+   "_": "2017-05-04T21:11:55+09:00"
+  },
+  "summary": {
+   "_": "# テストエントリ これはテストです。",
+   "$": {
+    "type": "text"
+   }
+  },
+  "content": {
+   "_": "# テストエントリ\r\nこれはテストです。\r\n\r\n",
+   "$": {
+    "type": "text/x-hatena-syntax"
+   }
+  },
+  "hatena:formatted-content": {
+   "_": "<p># テストエントリ<br />\nこれはテストです。</p>\n",
+   "$": {
+    "type": "text/html",
+    "xmlns:hatena": "http://www.hatena.ne.jp/info/xmlns#"
+   }
+  },
+  "category": [
+   {
+    "$": {
+     "term": "blog"
+    }
+   },
+   {
+    "$": {
+     "term": "hatena"
+    }
+   }
+  ],
+  "app:control": {
+   "app:draft": {
+    "_": "no"
+   }
+  }
+ }
+}
+```
+
+##### 戻り値
+
+#### Blog.getEntries()
+
+エントリのコレクションを取得します。AtomPub APIの制約により、1回のAPI呼び出しで取得できる記事は7記事までとなっています。
+
+##### 書式
+
+```javascript
+getEntries(page);
+```
+
+##### 引数
+
+* ***page*** ... page IDを指定します。page IDを取得・設定することで、7記事以上の記事を連続して取得することができます。使用例を参照してください。
+
+##### 戻り値
+
+Promiseを返します。処理結果は`then()`の引数に指定する`function`オブジェクトの第一引数として渡されます。
+
+##### 使用例
+
+```javascript
+
+```
+
+
 
 ## License
 
