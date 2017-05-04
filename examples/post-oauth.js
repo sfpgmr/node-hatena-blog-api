@@ -1,8 +1,8 @@
-var blog = require('../'); // require('hatena-blog-api')
+const Blog = require('../lib/').Blog;
 
-var client = blog({
+const client = new Blog({
   type: 'oauth',
-  username: process.env.HATENA_USERNAME,
+  userName: process.env.HATENA_USERNAME,
   blogId: process.env.HATENA_BLOG_ID,
   consumerKey: process.env.HATENA_CONSUMER_KEY,
   consumerSecret: process.env.HATENA_CONSUMER_SECRET,
@@ -10,13 +10,11 @@ var client = blog({
   accessTokenSecret: process.env.HATENA_ACCESS_TOKEN_SECRET
 });
 
-client.create({
+client.postEntry({
   title: 'bouzuya\'s entry',
   content: 'fun is justice!'
-}, function(err, res) {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log('uploaded');
-  }
-});
+})
+.then((res)=>{
+  console.log('posted.\n',JSON.stringify(res,null,1));
+},console.error.bind(console));
+

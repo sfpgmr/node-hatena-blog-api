@@ -1,0 +1,68 @@
+posted.
+ {
+ "entry": {
+  "$": {
+   "xmlns": "http://www.w3.org/2005/Atom",
+   "xmlns:app": "http://www.w3.org/2007/app"
+  },
+  "id": {
+   "_": "tag:blog.hatena.ne.jp,2013:blog-sfpgmr-12921228815731439891-10328749687242951848"
+  },
+  "link": [
+   {
+    "$": {
+     "rel": "edit",
+     "href": "https://blog.hatena.ne.jp/sfpgmr/sfpgmr-test.hatenablog.com/atom/entry/10328749687242951848"
+    }
+   },
+   {
+    "$": {
+     "rel": "alternate",
+     "type": "text/html",
+     "href": "http://sfpgmr-test.hatenablog.com/entry/2010/02/01/bouzuya%27s_entry_8"
+    }
+   }
+  ],
+  "author": {
+   "name": {
+    "_": "sfpgmr"
+   }
+  },
+  "title": {
+   "_": "bouzuya's entry"
+  },
+  "updated": {
+   "_": "2010-02-01T01:10:00+09:00"
+  },
+  "published": {
+   "_": "2017-05-04T10:52:57+09:00"
+  },
+  "app:edited": {
+   "_": "2017-05-04T10:52:57+09:00"
+  },
+  "summary": {
+   "_": "fun is justice! これはテストです。",
+   "$": {
+    "type": "text"
+   }
+  },
+  "content": {
+   "_": "# fun is justice!\r\nこれはテストです。\r\n\r\n",
+   "$": {
+    "type": "text/x-markdown"
+   }
+  },
+  "hatena:formatted-content": {
+   "_": "<h1>fun is justice!</h1>\n\n<p>これはテストです。</p>\n",
+   "$": {
+    "type": "text/html",
+    "xmlns:hatena": "http://www.hatena.ne.jp/info/xmlns#"
+   }
+  },
+  "app:control": {
+   "app:draft": {
+    "_": "no"
+   }
+  }
+ }
+}

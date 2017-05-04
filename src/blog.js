@@ -8,6 +8,8 @@ function pad(n) {
   return ('0' + n).slice(-2);
 }
 
+// DateをISO8601形式文字列に変換する
+// String.toISOString()はタイムゾーンがZとなってしまうので。。
 function toISOString(d = new Date()) {
   let timezoneOffset = d.getTimezoneOffset();
   let hour = Math.abs(timezoneOffset / 60) | 0;
@@ -20,6 +22,9 @@ function toISOString(d = new Date()) {
   }
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}${tzstr}`;
 }
+
+// ISO8601形式かどうかをチェックする正規表現
+var ISO8601Format = /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z)$/;
 
 // Hatena::Blog AtomPub API wrapper
 //
@@ -39,7 +44,6 @@ function toISOString(d = new Date()) {
 //   => None
 class Blog {
   static initClass() {
-
     this.prototype._rawRequest = request;
   }
 
@@ -57,30 +61,67 @@ class Blog {
   //   - accessToken       : oauth access token. (required)
   //   - accessTokenSecret : oauth access token secret. (required)
   constructor({
-    type,
-    username,
+    type = 'wsse',
     userName,
-    blogid,
     blogId,
-    apikey,
     apiKey,
-    consumerkey,
     consumerKey,
-    consumersecret,
     consumerSecret,
-    accesstoken,
     accessToken,
-    accesstokensecret,
     accessTokenSecret
   }) {
-    this._type = type != null ? type : 'wsse';
-    this._username = userName != null ? userName : username;
-    this._blogId = blogId != null ? blogId : blogid;
-    this._apiKey = apiKey != null ? apiKey : apikey;
-    this._consumerKey = consumerKey != null ? consumerKey : consumerkey;
-    this._consumerSecret = consumerSecret != null ? consumerSecret : consumersecret;
-    this._accessToken = accessToken != null ? accessToken : accesstoken;
-    this._accessTokenSecret = accessTokenSecret != null ? accessTokenSecret : accesstokensecret;
+    this._type = !type ? type : 'wsse';
+    // 各パラメータのチェック
+    if(this._type != 'oauth' && this._type != 'wsse'){
+      throw new Error('constructor:typeには"wsse"もしくは"oauth"以外の値は指定できません。');
+    }
+    if(!userName) {
+      throw new Error('constructor:userNameが空白・null・未指定です。正しいはてなブログユーザー名を指定してください。');
+    }
+    if(!blogId){
+      throw new Error('constructor:blogIdが空白・null・未指定です。正しいはてなブログIDを指定してください。');
+    }
+    if(!apiKey){
+      throw new Error('constructor:apiKeyが空白・null・未指定です。正しいはてなブログAPIキーを指定してください。');
+    }
+
+    if(this.type_ == 'oauth'){
+      if(!consumerKey){
+        throw new Error('constructor:consumerKeyが空白・null・未指定です。正しいコンシューマー・キーを指定してください。');
+      }
+      if(!consumerSecret){
+        throw new Error('constructor:consumerSecretが空白・null・未指定です。正しいコンシューマー・シークレットを指定してください。');
+      }
+      if(!accessToken){
+        throw new Error('constructor:accessTokenが空白・null・未指定です。正しいアクセス・トークンを指定してください。');
+      }
+      if(!accessTokenSecret){
+        throw new Error('constructor:accessTokenSecretが空白・null・未指定です。正しいアクセス・トークン・シークレットを指定してください。');
+      }
+    } else {
+      if(consumerKey){
+        console.warn('"wsse"では使用しないconsumerKeyパラメータが指定されています。'); 
+      }
+      if(consumerSecret){
+        console.warn('"wsse"では使用しないconsumerSecretパラメータが指定されています。');      
+      }
+      if(accessToken){
+        console.warn('"wsse"では使用しないaccessTokenパラメータが指定されています。');      
+      }
+      if(accessTokenSecret){
+        console.warn('"wsse"では使用しないaccessTokenSecretパラメータが指定されています。');
+      }
+
+    }
+
+    this._userName = userName;
+
+    this._blogId = blogId;;
+    this._apiKey = apiKey;
+    this._consumerKey = consumerKey;
+    this._consumerSecret = consumerSecret;
+    this._accessToken = accessToken;
+    this._accessTokenSecret = accessTokenSecret;
     this._baseUrl = 'https://blog.hatena.ne.jp';
   }
 
@@ -89,16 +130,17 @@ class Blog {
   //   options: (required)
   //   - title      : 'title'. entry title.default `''`. (required)
   //   - content    : 'content'. entry content. default `''`.
-  //   - type       : 'type'. entry content type . "text/html","text/markdown","text/plain"
   //   - updated    : 'updated'. default `undefined`
   //   - categories : 'category' '@term'. default `undefined`.
   //   - draft      : 'app:control' > 'app:draft'. default `undefined`.
   // returns:
   //   Promise
-  create({ title = '', content = '', type = 'text/plain', updated = new Date(), categories, draft = true }) {
-    let method = 'post';
-    let path = `/${this._username}/${this._blogId}/atom/entry`;
-    let body = {
+  postEntry({ title = '', content = '',  updated = new Date(), categories, draft = false }) {
+    const method = 'post';
+    const path = `/${this._userName}/${this._blogId}/atom/entry`;
+    title = !title ? '' : title;
+    content = !content ? '' : content; 
+    const body = {
       entry: {
         $: {
           xmlns: 'http://www.w3.org/2005/Atom',
@@ -109,13 +151,19 @@ class Blog {
         },
         content: {
           $: {
-            type: type || 'text/plain'
+            type: 'text/plain'
           },
           _: content
         }
       }
     };
-    if (updated instanceof Date) updated = toISOString(updated);
+    //
+    if (updated instanceof Date)
+    {
+      updated = toISOString(updated);
+    } else {
+      !updated.match(ISO8601Format) && this._reject();
+    }
     if (updated) { body.entry.updated = { _: updated }; }
     if (categories) { body.entry.category = categories.map(c => ({ $: { term: c } })); }
     if (draft ? draft : false) { body.entry['app:control'] = { 'app:draft': { _: 'yes' } }; }
@@ -130,13 +178,12 @@ class Blog {
   //   - id         : entry id. (required)
   //   - title      : 'title'. entry title. default `undefined`.
   //   - content    : 'content'. entry content. (required).
-  //   - type       : 'type'. entry content type
   //   - updated    : 'updated'. default `undefined`
   //   - categories : 'category' '@term'. default `undefined`.
   //   - draft      : 'app:control' > 'app:draft'. default `undefined`.
   // returns:
   //   Promise
-  update({ id, title, content, type, updated, categories, draft }) {
+  updateEntry({ id, title, content, updated, categories, draft }) {
     if (!id) return this._reject('options.id is required');
     if (!content) return this._reject('options.content is required');
     if (!title) return this._reject('options.title is required');
@@ -146,7 +193,7 @@ class Blog {
     if (updated instanceof Date) updated = toISOString(updated);
 
     let method = 'put';
-    let path = `/${this._username}/${this._blogId}/atom/entry/${id}`;
+    let path = `/${this._userName}/${this._blogId}/atom/entry/${id}`;
     let body = {
       entry: {
         $: {
@@ -155,7 +202,7 @@ class Blog {
         },
         content: {
           $: {
-            type: type || 'text/plain'
+            type: 'text/plain'
           },
           _: content
         }
@@ -175,10 +222,10 @@ class Blog {
   //   - id: entry id. (required)
   // returns:
   //   Promise
-  destroy({ id }) {
+  deleteEntry({ id }) {
     if (id == null) { return this._reject('options.id is required'); }
     let method = 'delete';
-    let path = `/${this._username}/${this._blogId}/atom/entry/${id}`;
+    let path = `/${this._userName}/${this._blogId}/atom/entry/${id}`;
     let statusCode = 200;
     return this._request({ method, path, statusCode });
   }
@@ -189,10 +236,10 @@ class Blog {
   //   - id: entry id. (required)
   // returns:
   //   Promise
-  show({ id }) {
+  getEntry({ id }) {
     if (id == null) { return this._reject('options.id is required'); }
     let method = 'get';
-    let path = `/${this._username}/${this._blogId}/atom/entry/${id}`;
+    let path = `/${this._userName}/${this._blogId}/atom/entry/${id}`;
     let statusCode = 200;
     return this._request({ method, path, statusCode });
   }
@@ -203,9 +250,9 @@ class Blog {
   //   - page: page
   // returns:
   //   Promise
-  index(options) {
+  getEntries(options) {
     let method = 'get';
-    let pathWithoutQuery = `/${this._username}/${this._blogId}/atom/entry`;
+    let pathWithoutQuery = `/${this._userName}/${this._blogId}/atom/entry`;
     let page = options.page != null ? options.page : undefined;
     let query = page ? `?page=${page}` : '';
     let path = pathWithoutQuery + query;
@@ -235,7 +282,7 @@ class Blog {
         token_secret: this._accessTokenSecret
       };
     } else { // @_type is 'wsse'
-      let token = wsse().getUsernameToken(this._username, this._apiKey, { nonceBase64: true });
+      let token = wsse().getUsernameToken(this._userName, this._apiKey, { nonceBase64: true });
       params.headers = {
         'Authorization': 'WSSE profile="UsernameToken"',
         'X-WSSE': `UsernameToken ${token}`
