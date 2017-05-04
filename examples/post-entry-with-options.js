@@ -44,6 +44,4 @@ client.postEntry({
 .then(res=>{
   console.log('posted.\n',JSON.stringify(res,null,1));
 },
-console.error.bind(console))
-
-;
+console.error.bind(console));

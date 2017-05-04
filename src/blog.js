@@ -1,5 +1,3 @@
-import fs from 'fs';
-import oauth from 'oauth';
 import request from 'request';
 import wsse from 'wsse';
 import xml2js from 'xml2js';
@@ -11,21 +9,19 @@ function pad(n) {
 const toString = Object.prototype.toString;
 
 // 型判定
-function isString(v){
+function isString(v) {
   return toString.call(v) == '[object String]';
 }
 
-function isDate(v){
-  console.log(toString.call(v));
+function isDate(v) {
   return toString.call(v) == '[object Date]';
 }
 
-function isArray(v){
-  console.log(toString.call(v));
+function isArray(v) {
   return toString.call(v) == '[object Array]';
 }
 
-function isBoolean(v){
+function isBoolean(v) {
   return toString.call(v) == '[object Boolean]';
 }
 
@@ -66,6 +62,12 @@ var ISO8601Format = /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[
 class Blog {
   static initClass() {
     this.prototype._rawRequest = request;
+    this.prototype._xmlBuilder = new xml2js.Builder();
+    this.prototype._xmlParser
+      = new xml2js.Parser({
+        explicitArray: false,
+        explicitCharkey: true
+      });
   }
 
   // コンストラクタ
@@ -83,43 +85,43 @@ class Blog {
   }) {
     this._type = type;
     // 各パラメータのチェック
-    if(this._type != 'oauth' && this._type != 'wsse'){
+    if (this._type != 'oauth' && this._type != 'wsse') {
       throw new Error('constructor:typeには"wsse"もしくは"oauth"以外の値は指定できません。');
     }
-    if(!userName) {
+    if (!userName) {
       throw new Error('constructor:userNameが空白・null・未指定です。正しいはてなブログユーザー名を指定してください。');
     }
-    if(!blogId){
+    if (!blogId) {
       throw new Error('constructor:blogIdが空白・null・未指定です。正しいはてなブログIDを指定してください。');
     }
-    if(!apiKey){
+    if (!apiKey) {
       throw new Error('constructor:apiKeyが空白・null・未指定です。正しいはてなブログAPIキーを指定してください。');
     }
 
-    if(this.type_ == 'oauth'){
-      if(!consumerKey){
+    if (this.type_ == 'oauth') {
+      if (!consumerKey) {
         throw new Error('constructor:consumerKeyが空白・null・未指定です。正しいコンシューマー・キーを指定してください。');
       }
-      if(!consumerSecret){
+      if (!consumerSecret) {
         throw new Error('constructor:consumerSecretが空白・null・未指定です。正しいコンシューマー・シークレットを指定してください。');
       }
-      if(!accessToken){
+      if (!accessToken) {
         throw new Error('constructor:accessTokenが空白・null・未指定です。正しいアクセス・トークンを指定してください。');
       }
-      if(!accessTokenSecret){
+      if (!accessTokenSecret) {
         throw new Error('constructor:accessTokenSecretが空白・null・未指定です。正しいアクセス・トークン・シークレットを指定してください。');
       }
     } else {
-      if(consumerKey){
-        console.warn('"wsse"では使用しないconsumerKeyパラメータが指定されています。'); 
+      if (consumerKey) {
+        console.warn('"wsse"では使用しないconsumerKeyパラメータが指定されています。');
       }
-      if(consumerSecret){
-        console.warn('"wsse"では使用しないconsumerSecretパラメータが指定されています。');      
+      if (consumerSecret) {
+        console.warn('"wsse"では使用しないconsumerSecretパラメータが指定されています。');
       }
-      if(accessToken){
-        console.warn('"wsse"では使用しないaccessTokenパラメータが指定されています。');      
+      if (accessToken) {
+        console.warn('"wsse"では使用しないaccessTokenパラメータが指定されています。');
       }
-      if(accessTokenSecret){
+      if (accessTokenSecret) {
         console.warn('"wsse"では使用しないaccessTokenSecretパラメータが指定されています。');
       }
     }
@@ -140,15 +142,15 @@ class Blog {
   //   Promise
   postEntry({
      title = '',// タイトル文字列
-     content = '',// 記事本文
-     updated = new Date(), // 日付
-     categories,// カテゴリ 
-     draft = false // 下書きかどうか
-    }) {
+    content = '',// 記事本文
+    updated = new Date(), // 日付
+    categories,// カテゴリ 
+    draft = false // 下書きかどうか
+  }) {
     const method = 'post';
     const path = `/${this._userName}/${this._blogId}/atom/entry`;
     title = !title ? '' : title;
-    content = !content ? '' : content; 
+    content = !content ? '' : content;
     const body = {
       entry: {
         $: {
@@ -167,25 +169,23 @@ class Blog {
       }
     };
     // 日付文字列のチェック
-    if (isDate(updated))
-    {
+    if (isDate(updated)) {
       // DateはISO8601文字列に変換
       updated = toISOString(updated);
-    } else if(!updated.match(ISO8601Format))
-    {
+    } else if (!updated.match(ISO8601Format)) {
       return this._reject('postEntry:updatedの日付フォーマットに誤りがあります。指定できるのはDateオブジェクトかISO8601文字列のみです。');
     }
     // categoriesのチェック
-    if(categories){
-      if(!isArray(categories)){
-        if(isString(categories)){
+    if (categories) {
+      if (!isArray(categories)) {
+        if (isString(categories)) {
           categories = [categories];
         } else {
           return this._reject('postEntry:categoriesに文字列もしくは文字配列以外の値が指定されています。指定できるのは文字列か、文字配列のみです。');
         }
       } else {
-        for(let i = 0,e = categories.length;i < e;++i){
-          if(!isString(categories[i])){
+        for (let i = 0, e = categories.length; i < e; ++i) {
+          if (!isString(categories[i])) {
             return this._reject('postEntry:categoriesの配列中に文字列でないものが含まれています。配列に含めることができるのは文字列のみです。');
           }
         }
@@ -194,16 +194,16 @@ class Blog {
 
 
     // draftのチェック
-    if(!isBoolean(draft)){
+    if (!isBoolean(draft)) {
       return this._reject('postEntry:draftにブール値以外の値が含まれています。')
     }
 
     if (updated) { body.entry.updated = { _: updated }; }
     if (categories) {
-       body.entry.category 
-        = categories.map(c => ({ $: { term: c } })); 
+      body.entry.category
+        = categories.map(c => ({ $: { term: c } }));
     }
-    if (draft ? draft : false) 
+    if (draft ? draft : false)
     { body.entry['app:control'] = { 'app:draft': { _: 'yes' } }; }
 
     let statusCode = 201;
@@ -222,31 +222,29 @@ class Blog {
     categories,// カテゴリ(オプション)
     draft = false //下書きがどうか(既定:false(公開))
   }) {
-    if (!id) return this._rejectRequired('updateEntry','id');
-    if (!content) return this._rejectRequired('updateEntry','content');
-    if (!title) return this._rejectRequired('updateEntry','title');
-    if (!updated) return this._rejectRequired('updateEntry','updated');
+    if (!id) return this._rejectRequired('updateEntry', 'id');
+    if (!content) return this._rejectRequired('updateEntry', 'content');
+    if (!title) return this._rejectRequired('updateEntry', 'title');
+    if (!updated) return this._rejectRequired('updateEntry', 'updated');
 
     // updatedのチェック
-    if (isDate(updated))
-    {
+    if (isDate(updated)) {
       // DateはISO8601文字列に変換
       updated = toISOString(updated);
-    } else if(!updated.match(ISO8601Format))
-    {
+    } else if (!updated.match(ISO8601Format)) {
       return this._reject('updateEntry:updatedの日付フォーマットに誤りがあります。指定できるのはDateオブジェクトかISO8601文字列のみです。');
     }
     // categoriesのチェック
-    if(categories){
-      if(!isArray(categories)){
-        if(isString(categories)){
+    if (categories) {
+      if (!isArray(categories)) {
+        if (isString(categories)) {
           categories = [categories];
         } else {
           return this._reject('postEntry:categoriesに文字列もしくは文字配列以外の値が指定されています。指定できるのは文字列か、文字配列のみです。');
         }
       } else {
-        for(let i = 0,e = categories.length;i < e;++i){
-          if(!isString(categories[i])){
+        for (let i = 0, e = categories.length; i < e; ++i) {
+          if (!isString(categories[i])) {
             return this._reject('postEntry:categoriesの配列中に文字列でないものが含まれています。配列に含めることができるのは文字列のみです。');
           }
         }
@@ -254,14 +252,14 @@ class Blog {
     }
 
     // draftのチェック
-    if(!isBoolean(draft)){
+    if (!isBoolean(draft)) {
       return this._reject('postEntry:draftにブール値以外の値が含まれています。')
     }
 
 
     title = !title ? '' : title;
-    content = !content ? '' : content; 
-     
+    content = !content ? '' : content;
+
     const method = 'put';
     const path = `/${this._userName}/${this._blogId}/atom/entry/${id}`;
     const body = {
@@ -280,14 +278,12 @@ class Blog {
     };
     title && (body.entry.title = { _: title });
     body.entry.updated = { _: updated };
-    if (categories != null)
-    { 
-      body.entry.category 
-      = categories.map(c => ({ $: { term: c } })); 
+    if (categories != null) {
+      body.entry.category
+        = categories.map(c => ({ $: { term: c } }));
     }
-    if (draft != null ? draft : false) 
-    {
-       body.entry['app:control'] = { 'app:draft': { _: 'yes' } }; 
+    if (draft != null ? draft : false) {
+      body.entry['app:control'] = { 'app:draft': { _: 'yes' } };
     }
     console.log(body);
     let statusCode = 200;
@@ -301,7 +297,7 @@ class Blog {
   // returns:
   //   Promise
   deleteEntry(id) {
-    if (id == null) { return this._rejectRequired('deleteEntry','id'); }
+    if (id == null) { return this._rejectRequired('deleteEntry', 'id'); }
     let method = 'delete';
     let path = `/${this._userName}/${this._blogId}/atom/entry/${id}`;
     let statusCode = 200;
@@ -312,7 +308,7 @@ class Blog {
   // returns:
   //   Promise
   getEntry(id) {
-    if (id == null) { return this._rejectRequired('getEntry','id'); }
+    if (id == null) { return this._rejectRequired('getEntry', 'id'); }
     let method = 'get';
     let path = `/${this._userName}/${this._blogId}/atom/entry/${id}`;
     let statusCode = 200;
@@ -323,12 +319,25 @@ class Blog {
   // returns:
   //   Promise
   getEntries(page) {
-    let method = 'get';
-    let pathWithoutQuery = `/${this._userName}/${this._blogId}/atom/entry`;
-    let query = page ? `?page=${page}` : '';
-    let path = pathWithoutQuery + query;
-    let statusCode = 200;
-    return this._request({ method, path, statusCode });
+    const method = 'get';
+    const pathWithoutQuery = `/${this._userName}/${this._blogId}/atom/entry`;
+    const query = page ? `?page=${page}` : '';
+    const path = pathWithoutQuery + query;
+    const statusCode = 200;
+    console.log(path);
+    return this._request({ method, path, statusCode })
+      .then(res => {
+        const results = { res: res };
+        // 前のページのPage IDを取り出す
+        const next = res.feed.link.filter((d) => d.$.rel == 'next');
+        if (next && next[0]) {
+          const regexp = /\?page\=([0-9]*)$/;
+          const maches = regexp.exec(next[0].$.href);
+          const nextPageID = maches[1].trim();
+          if(nextPageID) results.nextPageID = nextPageID;
+        }
+        return results;
+      });
   }
 
   _reject(message) {
@@ -341,7 +350,7 @@ class Blog {
     }
   }
 
-  _rejectRequired(methodName,paramStr){
+  _rejectRequired(methodName, paramStr) {
     return this._reject(`${methodName}:{}.${paramStr}が指定されていません。{}.${paramStr}は必須項目です。`);
   }
 
@@ -378,7 +387,7 @@ class Blog {
   }
 
   _requestPromise(params) {
-    return new Promise((function (resolve, reject) {
+    return new Promise(( (resolve, reject) => {
       return this._rawRequest(params, function (err, res) {
         if (err != null) {
           return reject(err);
@@ -386,13 +395,13 @@ class Blog {
           return resolve(res);
         }
       });
-    }.bind(this)));
+    }));
   }
 
   _toJson(xml) {
-    return new Promise(function (resolve, reject) {
-      let parser = new xml2js.Parser({ explicitArray: false, explicitCharkey: true });
-      return parser.parseString(xml, function (err, result) {
+    return new Promise((resolve, reject) =>{
+      // let parser = new xml2js.Parser({ explicitArray: false, explicitCharkey: true });
+      return this._xmlParser.parseString(xml,  (err, result)=> {
         if (err != null) {
           return reject(err);
         } else {
@@ -403,9 +412,8 @@ class Blog {
   }
 
   _toXml(json) {
-    let builder = new xml2js.Builder();
     try {
-      let xml = builder.buildObject(json);
+      let xml = this._xmlBuilder.buildObject(json);
       return Promise.resolve(xml);
     } catch (e) {
       return Promise.reject(e);

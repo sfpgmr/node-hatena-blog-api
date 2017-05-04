@@ -33,7 +33,6 @@ const rollupParams =
     ]
 }
 
-const rollup
 gulp.task('clean', function(done) {
   let del = require('del');
   return del([
