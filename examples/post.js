@@ -9,12 +9,17 @@ const client = new Blog({
 
 // POST CollectionURI (/<username>/<blog_id>/atom/entry)
 client.postEntry({
-  title: 'bouzuya\'s entry',
+  title: 'テストエントリ',
   updated:new Date(2010,1,1,10,10),
-  content: '# fun is justice!\r\nこれはテストです。\r\n\r\n',
+  content: '# テストエントリ\r\nこれはテストです。\r\n\r\n',
 })
-.then((res)=>{
-  console.log('posted\n',JSON.stringify(res,null,1));
-},console.error.bind(console));
+.then(
+  // resolve
+  (res)=>{
+    console.log('posted\n',JSON.stringify(res,null,1));
+  },
+  // reject
+  console.error.bind(console)
+);
 
 

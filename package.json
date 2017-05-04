@@ -1,14 +1,13 @@
 {
-  "name": "hatena-blog-api",
-  "description": "Hatena::Blog AtomPub API wrapper for Node.js (unofficial)",
-  "version": "0.3.0",
+  "name": "hatena-blog-api2",
+  "description": "Hatena::Blog AtomPub API wrapper 2 for Node.js (unofficial)",
+  "version": "0.1.0",
   "author": {
-    "name": "bouzuya",
-    "mail": "m@bouzuya.net",
-    "url": "http://bouzuya.net"
+    "name": "S.F.",
+    "url": "http://www.sfpgmr.net"
   },
   "bugs": {
-    "url": "https://github.com/bouzuya/node-hatena-blog-api/issues"
+    "url": "https://github.com/sfpgmr/node-hatena-blog-api2/issues"
   },
   "dependencies": {
     "oauth": "^0.9.12",
@@ -43,7 +42,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/bouzuya/node-hatena-blog-api.git"
+    "url": "git://github.com/sfpgmr/node-hatena-blog-api2.git"
   },
   "scripts": {
     "build": "gulp",
