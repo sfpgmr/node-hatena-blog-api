@@ -1,6 +1,6 @@
 # hatena-blog-api2
 
-## ※このライブラリおよびコードは現在作成中です。
+## ※このライブラリおよびREADMEは現在作成中です。
 
 このライブラリは非公式なNode.js用の[Hatena::Blog AtomPub API](http://developer.hatena.ne.jp/ja/documents/blog/apis/atom)のラッパーです。
 [bouzuya](https://github.com/bouzuya)さんの[node-hatena-blog-api](https://github.com/bouzuya/node-hatena-blog-api)をベースにcoffeeからes6に変換し、いくつか修正を加えています。
