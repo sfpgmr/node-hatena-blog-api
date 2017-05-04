@@ -174,7 +174,7 @@ postEntry({ title = '', content = '',  updated = new Date(), categories, draft =
 
 ##### 戻り値
 
-Promiseを返します。`then()`ではセットする`function`オブジェクトの第一引数に処理結果がjsonで返ります。
+Promiseを返します。処理結果は`then()`の引数に指定する`function`オブジェクトの第一引数として渡されます。
 
 ##### 使用例
 
@@ -299,7 +299,7 @@ client.postEntry({
 
 ##### 戻り値
 
-Promiseを返します。処理結果は`then()`ではセットする`function`オブジェクトの第一引数にセットされます。
+Promiseを返します。処理結果は`then()`の引数に指定する`function`オブジェクトの第一引数として渡されます。
 
 ##### 使用例
 
