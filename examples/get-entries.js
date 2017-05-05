@@ -1,3 +1,4 @@
+"use strict"
 // エントリのコレクションをすべて取り出すサンプル
 const Blog = require('hatena-blog-api2').Blog;
 
@@ -11,19 +12,10 @@ const client = new Blog({
 let ps = Promise.resolve();
 
 function list(res){
-  console.log(res.nextPageID,res.res.feed.link);
   const entry = res.res.feed.entry;
-  if(entry){
-    if(entry.forEach){
-      entry.forEach(entry=>{
-          console.log(entry.title._);
-        });
-    } else {
+  entry.forEach(entry=>{
       console.log(entry.title._);
-    }
-  } else {
-    console.log(res.res.feed);
-  } 
+    });
   if(res.nextPageID){
     ps = ps.then(client.getEntries.bind(client,res.nextPageID))
       .then(list);

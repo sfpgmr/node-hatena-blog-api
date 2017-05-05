@@ -10,22 +10,7 @@ const client = new Blog({
 //process.on('unhandledRejection', console.dir);
 
 // POST CollectionURI (/<username>/<blog_id>/atom/entry)
-client.postEntry({
-  title: 'テストエントリ',
-  updated:new Date(2010,1,1,10,10),
-  content: '# テストエントリ\r\nこれはテストです。\r\n\r\n',
-  categories:['blog','hatena']
-})
-.then(
-  // resolve
-  res=>{
-    console.log('#postEntryの結果\n',JSON.stringify(res,null,1));
-    // idの取り出し
-    const entryId = client.getEntryID(res.entry);
-    // エントリを取得
-    return client.getEntry(entryId);
-  }
-)
+client.getEntry('10328749687243373274')
 .then(
   // resolve
   res=>{

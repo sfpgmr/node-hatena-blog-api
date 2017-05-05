@@ -336,8 +336,9 @@ client.postEntry({
   res=>{
     console.log('#postEntryの結果\n',JSON.stringify(res,null,1));
     // idの取り出し
-    const entryId = res.entry.id._.match(/^tag:[^:]+:[^-]+-[^-]+-\d+-(\d+)$/)[1];
+    const entryId = client.getEntryID(res.entry);
     console.log(entryId);
+    // ポストしたデータの更新
     return client.updateEntry({
       id:entryId,
       title:res.entry.title._,
@@ -458,8 +459,7 @@ client.postEntry({
   res=>{
     console.log('#postEntryの結果\n',JSON.stringify(res,null,1));
     // idの取り出し
-    const entryId = res.entry.id._.match(/^tag:[^:]+:[^-]+-[^-]+-\d+-(\d+)$/)[1];
-    console.log(entryId);
+    const entryId = client.getEntryID(res.entry);
     // エントリを取得
     return client.getEntry(entryId);
   }
@@ -472,7 +472,9 @@ client.postEntry({
 )
 .catch(console.error);
 ```
+
 `getEntry`で返却されるJSONデータの例
+
 
 ```json
  {
@@ -556,11 +558,10 @@ client.postEntry({
 }
 ```
 
-##### 戻り値
-
 #### Blog.getEntries()
 
-エントリのコレクションを取得します。AtomPub APIの制約により、1回のAPI呼び出しで取得できるエントリは10エントリまでとなっています。
+エントリのコレクションを取得します。AtomPub APIの制約により、1回のAPI呼び出しで取得できるエントリは10エントリまでとなっています。  
+(仕様では7エントリとなっているのですが。。)
 
 ##### 書式
 
@@ -570,7 +571,8 @@ getEntries(page);
 
 ##### 引数
 
-* ***page*** ... pageIDを指定します。このメソッドを呼び出すことで得られるpageIDを取得・設定することで、10エントリ以上の記事を連続して取得することができます。使用例を参照してください。指定しない場合は最初の10記事と、次のページがある場合はpageIDを返します。
+* ***page*** ... pageIDを指定します。このメソッドを呼び出すことで得られるpageIDを取得・設定することで、10エントリ以上の記事を連続して取得することができます。使用例を参照してください。  
+指定しない場合は最初の10記事と、次のページがある場合はpageIDを返します。  
 
 ##### 戻り値
 

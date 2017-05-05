@@ -7,9 +7,12 @@ const client = new Blog({
   apiKey: process.env.HATENA_APIKEY      // 'apikey'
 });
 
-//process.on('unhandledRejection', console.dir);
+function wait(ms = 500){
+  return new Promise((resolve,reject)=>{
+    setTimeout(resolve,ms);
+  });
+}
 
-// POST CollectionURI (/<username>/<blog_id>/atom/entry)
 client.postEntry({
   title: 'テストエントリ',
   updated:new Date(2010,1,1,10,10),
@@ -21,14 +24,15 @@ client.postEntry({
   res=>{
     console.log('#postEntryの結果\n',JSON.stringify(res,null,1));
     // idの取り出し
-    const entryId = res.entry.id._.match(/^tag:[^:]+:[^-]+-[^-]+-\d+-(\d+)$/)[1];
+    const entryId = client.getEntryID(res.entry);
     console.log(entryId);
-    return client.updateEntry({
+    // ポストしたデータの更新
+    return wait(1000).then(client.updateEntry.bind(client,{
       id:entryId,
       title:res.entry.title._,
       content:'修正',
       updated:res.entry.updated._
-    });
+    }));
   }
 )
 .then(
