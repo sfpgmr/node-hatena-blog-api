@@ -18,22 +18,12 @@
   "devDependencies": {
     "del": "^0.1.2",
     "gulp": "^3.8.7",
-    "gulp-coveralls": "^0.1.2",
-    "gulp-espower": "^0.8.0",
-    "gulp-istanbul": "^0.2.2",
-    "gulp-mocha": "^1.0.0",
     "gulp-rollup": "^2.11.0",
-    "gulp-util": "^3.0.0",
-    "merge-stream": "^0.1.5",
-    "mocha": "^1.20.1",
-    "npm-run-all": "2.2.2",
-    "power-assert": "^0.7.2",
     "rollup": "^0.41.6",
     "rollup-plugin-commonjs": "^8.0.2",
-    "rollup-plugin-node-resolve": "^3.0.0",
-    "sinon": "^1.10.3"
+    "rollup-plugin-node-resolve": "^3.0.0"
   },
-  "homepage": "https://github.com/bouzuya/node-hatena-blog-api",
+  "homepage": "https://github.com/sfpgmr/node-hatena-blog-api2",
   "keywords": [
     "hatena",
     "hatena-blog"
@@ -47,8 +37,6 @@
   "scripts": {
     "build": "gulp",
     "clean": "gulp clean",
-    "coveralls": "gulp coveralls",
-    "test": "gulp test",
     "watch": "gulp watch"
   }
 }
