@@ -351,7 +351,7 @@ class Blog {
   // entryのJSONデータからEntry IDを取り出す。
   getEntryID(entry /* entryのJSONデータ */){
     // 入力値のチェック
-    if(!entry.id || !entry.id._){
+    if(!entry.id){
       throw new Error('与えられたパラメータが不正です。');
     }
     const maches = entry.id._.match(/^tag:[^:]+:[^-]+-[^-]+-\d+-(\d+)$/);

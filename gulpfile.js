@@ -26,8 +26,6 @@ const rollupParams =
 gulp.task('clean', function(done) {
   let del = require('del');
   return del([
-    paths.compiledDir,
-    paths.coverageDir,
     paths.buildDir
   ], done);
 });
