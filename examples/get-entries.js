@@ -24,12 +24,5 @@ function list(res){
 
 ps = ps.then(client.getEntries.bind(client))
 .then(list);
-// client.getEntries('1493937391')
-// .then(res=>{
-//   console.log(res.nextPageID,res.res.feed.link,res);
-//   res.res.feed.entry && res.res.feed.entry.forEach(entry=>{
-//     console.log(entry.title);
-//   });
-// });
 
 

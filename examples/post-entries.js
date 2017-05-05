@@ -1,4 +1,4 @@
-// 20個のエントリを作成する
+// 32個のエントリを作成する
 const Blog = require('hatena-blog-api2').Blog;
 
 const client = new Blog({
@@ -27,7 +27,7 @@ for (let i = 1; i < 32; ++i) {
     });
   }).then((res)=>{
     console.log(`###### Test Entry ${i}: ID:${client.getEntryID(res.entry)}  ######\n`,JSON.stringify(res.entry.link,null,1));
-    // 500ms位のウェイトを入れないとリスト表示で異常が発生する（リストが歯抜けになる）
+    // 1000ms位のウェイトを入れないとリスト表示で異常が発生する（リストが歯抜けになる）
     return wait(1000);
   });
 

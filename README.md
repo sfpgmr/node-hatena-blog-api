@@ -1,15 +1,15 @@
 # hatena-blog-api2
 
-## ※このライブラリおよびREADMEは現在作成中です。
-
 このライブラリは非公式なNode.js用の[Hatena::Blog AtomPub API](http://developer.hatena.ne.jp/ja/documents/blog/apis/atom)のラッパーです。
-[bouzuya](https://github.com/bouzuya)さんの[node-hatena-blog-api](https://github.com/bouzuya/node-hatena-blog-api)をベースにcoffeeからes6に変換し、いくつか修正を加えています。  
+[bouzuya](https://github.com/bouzuya)さんの[node-hatena-blog-api](https://github.com/bouzuya/node-hatena-blog-api)をベースにcoffeeからes6に変換し、大きく修正を加えています。  
 https://github.com/bouzuya/node-hatena-blog-api
+
 
 ## 開発のポリシー
 
 * 不正なポストを行わないようにするため、引数のチェックはできる限り入念に行う。
 * ES6(ES2015)の構文をできる限り採用する。
+* メソッド名は自明であることを心がける。
 
 ## インストール方法
 
@@ -588,16 +588,64 @@ Promiseを返します。処理結果は`then()`の引数に指定する`functio
 ##### 使用例
 
 ```javascript
+"use strict"
+// エントリのコレクションをすべて取り出すサンプル
+const Blog = require('hatena-blog-api2').Blog;
+
+const client = new Blog({
+  type: 'wsse',
+  userName: process.env.HATENA_USERNAME, // 'username'
+  blogId: process.env.HATENA_BLOG_ID,    // 'blog id'
+  apiKey: process.env.HATENA_APIKEY      // 'apikey'
+});
+
+let ps = Promise.resolve();
+
+function list(res){
+  const entry = res.res.feed.entry;
+  entry.forEach(entry=>{
+      console.log(entry.title._);
+    });
+  if(res.nextPageID){
+    ps = ps.then(client.getEntries.bind(client,res.nextPageID))
+      .then(list);
+  }
+}
+
+ps = ps.then(client.getEntries.bind(client))
+.then(list);
 
 ```
 
+#### Blog.getEntryID()
 
+エントリ情報からEntryIDを取り出します。
+
+##### 書式
+
+```javascript
+getEntryID(entry);
+```
+
+##### 引数
+
+* ***entry*** ... エントリーJSONデータを指定します。エントリーデータでない場合は例外が発生します。
+
+##### 戻り値
+
+Entry IDを返却します。
+
+## このライブラリの問題点
+
+このライブラリには以下の問題点があります。
+
+* 連続ポストを行う際、記事のポストとポストの間に1000ms程度のウェイトを入れないと、正常にポストされない。  
+ポストされた情報ははてなブログの管理画面で正常に編集・更新・削除できるものの、実際のブログページには表示されない。  
+API上では正常にポストされたステータスコードが返ってくるため、なぜこうなるのかは原因不明。
 
 ## License
 
 [MIT](LICENSE)
-
-## 利用しているライブラリ
 
 ## 製作者
 
