@@ -21,7 +21,7 @@ client.postEntry({
   res=>{
     console.log('#postEntryの結果\n',JSON.stringify(res,null,1));
     // idの取り出し
-    const entryId = res.entry.id._.match(/^tag:[^:]+:[^-]+-[^-]+-\d+-(\d+)$/)[1];
+    const entryId = client.getEntryID(res.entry);
     console.log(entryId);
     // 記事の削除
     return client.deleteEntry(entryId);

@@ -400,7 +400,7 @@ client.postEntry({
   res=>{
     console.log('#postEntryの結果\n',JSON.stringify(res,null,1));
     // idの取り出し
-    const entryId = res.entry.id._.match(/^tag:[^:]+:[^-]+-[^-]+-\d+-(\d+)$/)[1];
+    const entryId = client.getEntryID(res.entry);
     console.log(entryId);
     // 記事の削除
     return client.deleteEntry(entryId);
@@ -413,7 +413,6 @@ client.postEntry({
   }
 )
 .catch(console.error);
-
 ```
 
 #### Blog.getEntry()
@@ -573,6 +572,7 @@ getEntries(page);
 
 * ***page*** ... pageIDを指定します。このメソッドを呼び出すことで得られるpageIDを取得・設定することで、10エントリ以上の記事を連続して取得することができます。使用例を参照してください。  
 指定しない場合は最初の10記事と、次のページがある場合はpageIDを返します。  
+(AtomPub APIでは1回のAPIコールで返ってくるエントリ数は7エントリとなっていますが、実際に試すと10エントリ返ってきます。API仕様が変更されたのかは不明です。) 
 
 ##### 戻り値
 
